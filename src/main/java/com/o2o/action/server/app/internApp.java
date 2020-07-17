@@ -222,14 +222,14 @@ public class internApp extends DialogflowApp {
 	@ForIntent("theater - fallback")
 	public ActionResponse theaterfallback(ActionRequest request) throws ExecutionException, InterruptedException {
 
-		ResponseBuilder rb = getResponseBuilder(request);
+			ResponseBuilder rb = getResponseBuilder(request);
 
-		//영화 리스트 생성
-		List<ListSelectListItem> movieSelectList = new ArrayList<>();
-		for(String movie : movieList)
-			movieSelectList.add(new ListSelectListItem().setTitle(movie).setDescription(movieDes.get(movie)).setImage(new Image().setUrl(img.get(movie)).setAccessibilityText("기생충")).setOptionInfo(new OptionInfo().setKey(movie)));
-		rb.add("현재 상영중인 영화가 아닙니다.\n"+"현재 상영하는 영화 목록은 다음과 같습니다. 어떤 영화를 예매하시겠습니까?");
-		rb.add("영화를 선택해주세요").add(new SelectionList().setTitle("상영 중인 영화").setItems(movieSelectList));
+			//영화 리스트 생성
+			List<ListSelectListItem> movieSelectList = new ArrayList<>();
+			for(String movie : movieList)
+				movieSelectList.add(new ListSelectListItem().setTitle(movie).setDescription(movieDes.get(movie)).setImage(new Image().setUrl(img.get(movie)).setAccessibilityText("기생충")).setOptionInfo(new OptionInfo().setKey(movie)));
+			rb.add("현재 상영중인 영화가 아닙니다.\n"+"현재 상영하는 영화 목록은 다음과 같습니다. 어떤 영화를 예매하시겠습니까?");
+			rb.add("영화를 선택해주세요").add(new SelectionList().setTitle("상영 중인 영화").setItems(movieSelectList));
 
 		return rb.build();
 	}
@@ -271,6 +271,7 @@ public class internApp extends DialogflowApp {
 		rb.add(simpleResponse);
 		rb.add(basicCard);
 		rb.addSuggestions(suggestions.toArray(new String[suggestions.size()]));
+		rb.removeContext("theater-followup");
 		return rb.build();
 	}
 
@@ -330,7 +331,7 @@ public class internApp extends DialogflowApp {
 	}
 		rb.add(new SelectionList().setItems(list).setTitle("상영 시간"));
 
-		rb.removeContext("theater-followup");
+		rb.removeContext("title-followup");
 		return rb.build();
 	}
 
@@ -375,7 +376,7 @@ public class internApp extends DialogflowApp {
 			time = selectedItem;
 		else
 			time = CommonUtil.makeSafeString(request.getParameter("time")).substring(11,16);
-		data.put("time",time);
+
 
 
 		if(!timeline.contains(time)) {
@@ -389,7 +390,7 @@ public class internApp extends DialogflowApp {
 			rb.removeContext("time-followup");
 			return rb.build();
 		}
-
+		data.put("time",time);
 		suggestions.add("b열 1부터 4까지");
 		String response = ""+ time+ " 영화 선택하셨습니다.\n좌석 현황은 다음과 같습니다.\n" +
 				"어느좌석으로 " + "예매하시겠습니까?";
@@ -402,6 +403,7 @@ public class internApp extends DialogflowApp {
 		rb.add(response);
 		rb.add(basicCard);
 		rb.addSuggestions(suggestions.toArray(new String[suggestions.size()]));
+		rb.removeContext("date-followup");
 		return rb.build();
 	}
 
@@ -509,7 +511,7 @@ public class internApp extends DialogflowApp {
 		headToInt.put("다섯명",5);
 		headToInt.put("여섯명",6);
 
-
+rb.add(""+headcount);
 
 		if(list2.size() == 0) {
 
@@ -521,8 +523,7 @@ public class internApp extends DialogflowApp {
 					cost = headcount * child_price;
 					child = headcount;
 				}
-			response = ""+list.get(0) +" "+ headcount +"명 "+" 확인되었습니다.\n"
-			+ theater +"점 " +movie +" " +date +" " + time +" \n"
+			response = ""+list.get(0) +" "+ headcount +"명 "+" 확인되었습니다.\n" + theater +"점 " +movie +" " +date +" " + time +" \n"
 			+"총 "+cost+"원입니다.";
 		}
 		if(list2.size() == 1) {
