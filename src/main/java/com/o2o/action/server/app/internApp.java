@@ -24,7 +24,7 @@ public class internApp extends DialogflowApp {
 	Map<String, String> img;		
 	Map<String, String> genrelist;
 	Map<String, String> actorlist;
-	Set<String> timeline;
+	List<String> timeline;
 
 	int adult_price;
 	int child_price;
@@ -33,6 +33,8 @@ public class internApp extends DialogflowApp {
 	List<String> movieList;
 	Map<String,String> movieDes;
 	boolean seatnotavail[][];
+	Map<String,String> theaterDes;
+	Map<String,String> theaterImg;
 
 
 
@@ -43,10 +45,10 @@ public class internApp extends DialogflowApp {
 
 
 
-		String text = text = URLEncoder.encode("기생충", "UTF-8");
+		String text  = URLEncoder.encode("기생충", "UTF-8");
 
-		//String apiURL = "https://openapi.naver.com/v1/search/movie.json?query="+text+"&display=1";    // json 결과
-		String apiURL = "https://openapi.naver.com/v1/search/blog.xml?query="+ text +"&display=1" ; // xml 결과
+		String apiURL = "https://openapi.naver.com/v1/search/movie.json?query="+text+"&display=1";    // json 결과
+		//String apiURL = "https://openapi.naver.com/v1/search/blog.xml?query="+ text +"&display=1" ; // xml 결과
 
 		Map<String, String> requestHeaders = new HashMap<>();
 		requestHeaders.put("X-Naver-Client-Id", clientId);
@@ -128,6 +130,22 @@ public class internApp extends DialogflowApp {
 		theaterList.add("압구정");
 		theaterList.add("홍대");
 
+		theaterDes = new HashMap<>();
+		theaterDes.put("강남","강남구 역삼동 814-6 스타플렉스");
+		theaterDes.put("건대입구","광진구 자양동 9-4 몰오브케이 3층");
+		theaterDes.put("명동"," 중구 명동2가 83-5번지 눈스퀘어 8층");
+		theaterDes.put("상봉","상봉동 79-9 상봉듀오트리스 B2F");
+		theaterDes.put("압구정","강남구 신사동 602, 603-2");
+		theaterDes.put("홍대","마포구 동교동 159-8");
+
+		theaterImg = new HashMap<>();
+		theaterImg.put("강남","https://actions.o2o.kr/devsvr7/image/CGVgangnam.jpg");
+		theaterImg.put("건대입구","https://actions.o2o.kr/devsvr7/image/gundae.jpg");
+		theaterImg.put("명동","https://actions.o2o.kr/devsvr7/image/meang.jpg");
+		theaterImg.put("상봉","https://actions.o2o.kr/devsvr7/image/sangbong.jpg");
+		theaterImg.put("압구정","https://actions.o2o.kr/devsvr7/image/guee.jpg");
+		theaterImg.put("홍대","https://actions.o2o.kr/devsvr7/image/hong.jpg");
+
 		img = new HashMap();
 		img.put("기생충","https://actions.o2o.kr/devsvr7/image/parasite.jpg");
 		img.put("존윅","https://actions.o2o.kr/devsvr7/image/john.jpg");
@@ -144,7 +162,7 @@ public class internApp extends DialogflowApp {
 		movieDes.put("겨울왕국","등장인물: 엘사, 안나  장르: 애니메이션\n줄거리 : 겨울왕국의 시련을 이겨내자!");
 
 
-		timeline = new HashSet<>();
+		timeline = new ArrayList<>();
 		timeline.add("14:10");
 		timeline.add("16:45");
 		timeline.add("19:15");
@@ -176,8 +194,13 @@ public class internApp extends DialogflowApp {
 		//극장 리스트 생성
 		List<ListSelectListItem> theaterSelectList = new ArrayList<>();
 		for(String theater : theaterList)
-			theaterSelectList.add(new ListSelectListItem().setTitle(theater).setOptionInfo(new OptionInfo().setKey(theater)));
-		rb.add("극장을 선택해주세요").add(new SelectionList().setTitle("극장 목록").setItems(theaterSelectList));
+			theaterSelectList.add(new ListSelectListItem().setTitle(theater)
+					.setDescription(theaterDes.get(theater))
+					.setImage(new Image().setUrl(theaterImg.get(theater))
+							.setAccessibilityText(theater))
+					.setOptionInfo(new OptionInfo().setKey(theater)));
+		rb.add("어서오세요. 어느 극장에서 영화를 예매하실건가요?")
+				.add(new SelectionList().setTitle("극장 목록").setItems(theaterSelectList));
 
 		//suggestions chip
 		List<String> suggestions = new ArrayList<String>();
@@ -211,7 +234,7 @@ public class internApp extends DialogflowApp {
 		List<ListSelectListItem> movieSelectList = new ArrayList<>();
 		for(String movie : movieList)
 			movieSelectList.add(new ListSelectListItem().setTitle(movie).setDescription(movieDes.get(movie)).setImage(new Image().setUrl(img.get(movie)).setAccessibilityText("기생충")).setOptionInfo(new OptionInfo().setKey(movie)));
-		rb.add(""+theater+ " 선택하셨습니다.\n"+"현재 상영하는 영화 목록은 다음과 같습니다. 어떤 영화를 예매하시겠습니까?");
+		rb.add(""+theater+ "점에서 관람하실거군요.\n"+"현재 상영하는 영화 목록은 다음과 같습니다. 어떤 영화를 예매하실건가요?");
 		rb.add("영화를 선택해주세요").add(new SelectionList().setTitle("상영 중인 영화").setItems(movieSelectList));
 
 		//추후의 인텐트가 theaterfollowup context 만 소유하고 defaultfollowup context는 제거하도록 함
@@ -228,7 +251,7 @@ public class internApp extends DialogflowApp {
 			List<ListSelectListItem> movieSelectList = new ArrayList<>();
 			for(String movie : movieList)
 				movieSelectList.add(new ListSelectListItem().setTitle(movie).setDescription(movieDes.get(movie)).setImage(new Image().setUrl(img.get(movie)).setAccessibilityText("기생충")).setOptionInfo(new OptionInfo().setKey(movie)));
-			rb.add("현재 상영중인 영화가 아닙니다.\n"+"현재 상영하는 영화 목록은 다음과 같습니다. 어떤 영화를 예매하시겠습니까?");
+			rb.add("지금 상영중인 영화가 아닙니다.\n"+"현재 상영하는 영화 목록은 다음과 같습니다. 어떤 영화를 예매하실건가요?");
 			rb.add("영화를 선택해주세요").add(new SelectionList().setTitle("상영 중인 영화").setItems(movieSelectList));
 
 		return rb.build();
@@ -241,6 +264,9 @@ public class internApp extends DialogflowApp {
 
 		List<String> suggestions = new ArrayList<String>();
 		suggestions.add("다음주 월요일");
+		suggestions.add("오늘");
+		suggestions.add("8월 3일");
+
 		SimpleResponse simpleResponse = new SimpleResponse();
 		BasicCard basicCard = new BasicCard();
 
@@ -259,9 +285,9 @@ public class internApp extends DialogflowApp {
 
 
 
-		simpleResponse.setTextToSpeech(genrelist.get(movie) + " 장르이고 "+actorlist.get(movie) +"가 출연하는 "+movie+" 선택하셨습니다."
-		+"\n영화 관람 날짜를 말씀해주세요.")
-				.setDisplayText(genrelist.get(movie) + " 장르이고 "+actorlist.get(movie) +"가 출연하는 "+movie+" 선택하셨습니다."+"\n영화 관람 날짜를 말씀해주세요.");
+		simpleResponse.setTextToSpeech(genrelist.get(movie) + " 장르이며 "+actorlist.get(movie) +" 주연의 "+movie+" 선택하셨습니다."
+		+"\n영화 관람 날짜를 말해주세요.")
+				.setDisplayText(genrelist.get(movie) + " 장르이며 "+actorlist.get(movie) +" 주연의 "+movie+" 선택하셨습니다."+"\n영화 관람 날짜를 말해주세요.");
 
 		basicCard
 				.setTitle("이번달 달력")
@@ -293,6 +319,7 @@ public class internApp extends DialogflowApp {
 
 		rb.add(response);
 		rb.add(basicCard);
+
 		rb.addSuggestions(suggestions.toArray(new String[suggestions.size()]));
 		return rb.build();
 	}
@@ -310,18 +337,27 @@ public class internApp extends DialogflowApp {
 
 
 		Calendar cal = Calendar.getInstance();
-		int year = cal.get ( cal.YEAR );
 		int month = cal.get ( cal.MONTH ) + 1 ;
 		int dedate = cal.get ( cal.DATE ) ;
 
-		if(month>Integer.parseInt(date.substring(0,2)) || (month==Integer.parseInt(date.substring(0,2)) && dedate >Integer.parseInt(date.substring(3,5)))){
+		if(month>Integer.parseInt(date.substring(0,2)) ||
+				(month==Integer.parseInt(date.substring(0,2)) && dedate >Integer.parseInt(date.substring(3,5)))){
+
 			rb.add("지나간 날짜입니다. 다시 날짜를 선택해주세요");
+
+			BasicCard basicCard = new BasicCard();
+			basicCard
+					.setTitle("이번달 달력")
+					.setImage(new Image()
+							.setUrl("https://actions.o2o.kr/devsvr7/image/calender8.jpg"));
+
+			rb.add(basicCard);
 			rb.removeContext("date-followup");
 			return rb.build();
 		}
 
 
-		rb.add("<speak>관람 날짜는  <say-as interpret-as=\"date\" format=\"md\"> " +date + "</say-as> 입니다.\n상영 시간은 다음과 같습니다.\n관람 시간을 선택해주세요.</speak>");
+		rb.add("<speak>관람 날짜는  <say-as interpret-as=\"date\" format=\"md\"> " +date + "</say-as> 입니다.\n상영 시간배정은 다음과 같습니다.\n어느 시간대 영화를 관람하실건가요?</speak>");
 
 
 		//time 리스트 생성
@@ -339,7 +375,6 @@ public class internApp extends DialogflowApp {
 	public ActionResponse datefallback(ActionRequest request) throws ExecutionException, InterruptedException {
 		ResponseBuilder rb = getResponseBuilder(request);
 
-		SimpleResponse simpleResponse = new SimpleResponse();
 
 
 		String response = "잘 못 이해했습니다.\n상영 시간은 다음과 같습니다.\n관람 시간을 선택해주세요.";
@@ -380,7 +415,7 @@ public class internApp extends DialogflowApp {
 
 
 		if(!timeline.contains(time)) {
-			rb.add("지정된 영화시간을 선택해주세요.");
+			rb.add("지정된 영화시간이 아닙니다. 다시 선택해주세요.");
 			//time 리스트 생성
 			List<ListSelectListItem> list = new ArrayList<>();
 			for(String str : timeline) {
@@ -392,6 +427,8 @@ public class internApp extends DialogflowApp {
 		}
 		data.put("time",time);
 		suggestions.add("b열 1부터 4까지");
+		suggestions.add("c열 2");
+
 		String response = ""+ time+ " 영화 선택하셨습니다.\n좌석 현황은 다음과 같습니다.\n" +
 				"어느좌석으로 " + "예매하시겠습니까?";
 
@@ -418,6 +455,10 @@ public class internApp extends DialogflowApp {
 		Map<String, Object> data = rb.getConversationData();
 
 		List<String> suggestions = new ArrayList<String>();
+		suggestions.add("어른만");
+		suggestions.add("어른둘에 어린이 하나");
+		suggestions.add("어른 한명 어린이 한명");
+
 
 
 		char seatrow;
@@ -434,7 +475,6 @@ public class internApp extends DialogflowApp {
 		data.put("headcount",headcount);
 
 
-
 		int row = (int)seatrow-65;
 
 		//빈좌석이 아니라면 fallback생성
@@ -442,18 +482,21 @@ public class internApp extends DialogflowApp {
 				if(seatnotavail[row][i+seatFront-1]==true)
 					return makeTimeFallback(request,1).build();
 
-
-
-		StringBuilder sb = new StringBuilder(Integer.toString(seatFront));
-		for(int i = 0; i<seatBack-seatFront; i++)
-			sb.append(seatFront+i+1);
+		StringBuilder	sb = new StringBuilder();
+		sb.append(seatrow+"열 ");
+		for(int i = 0; i<seatBack-seatFront+1; i++)
+			sb.append(""+(seatFront+i)+" ");
 		String seat = sb.toString();
 
+		data.put("seat",seat);
 
-		String response = ""+seatrow +"열 " +seat +"확인되었습니다.\n"+
-				"어른, 어린이 각각 몇명입니까?";
-
+		String response = ""+seat +"확인되었습니다.\n"+
+				"어른, 어린이 각각 몇명인지 말씀해주세요.";
+		BasicCard basicCard = new BasicCard();
+		basicCard.setImage(new Image().setUrl("https://actions.o2o.kr/devsvr7/image/images.jfif"));
 		rb.add(response);
+		rb.add(basicCard);
+		rb.removeContext("time-followup");
 		rb.addSuggestions(suggestions.toArray(new String[suggestions.size()]));
 		return rb.build();
 	}
@@ -462,6 +505,16 @@ public class internApp extends DialogflowApp {
 	public ActionResponse seatfallback(ActionRequest request) throws ExecutionException, InterruptedException {
 		ResponseBuilder rb = getResponseBuilder(request);
 		rb.add("어른 몇명, 어린이 몇명 인지 말씀해주세요.");
+		List<String> suggestions = new ArrayList<String>();
+		suggestions.add("어른만");
+		suggestions.add("어른둘에 어린이 하나");
+		suggestions.add("어른 한명 어린이 한명");
+		BasicCard basicCard = new BasicCard();
+		basicCard.setImage(new Image().setUrl("https://actions.o2o.kr/devsvr7/image/images.jfif"));
+
+
+		rb.add(basicCard);
+		rb.addSuggestions(suggestions.toArray(new String[suggestions.size()]));
 		return rb.build();
 	}
 	private ResponseBuilder makeTimeFallback(ActionRequest request, int Fcase){
@@ -491,9 +544,8 @@ public class internApp extends DialogflowApp {
 		String movie = CommonUtil.makeSafeString(data.get("movie"));
 		String date = CommonUtil.makeSafeString(data.get("date"));
 		String time = CommonUtil.makeSafeString(data.get("time"));
-		int headcount = CommonUtil.makeSafeInt(data.get("headcount"));
-
-
+		String seat = CommonUtil.makeSafeString(data.get("seat"));
+		Integer headcount = ((Double) request.getConversationData().get("headcount")).intValue();
 		SimpleResponse simpleResponse = new SimpleResponse();
 		BasicCard basicCard = new BasicCard();
 
@@ -511,8 +563,6 @@ public class internApp extends DialogflowApp {
 		headToInt.put("다섯명",5);
 		headToInt.put("여섯명",6);
 
-rb.add(""+headcount);
-
 		if(list2.size() == 0) {
 
 			if(list.get(0).equals("어른")) {
@@ -524,7 +574,7 @@ rb.add(""+headcount);
 					child = headcount;
 				}
 			response = ""+list.get(0) +" "+ headcount +"명 "+" 확인되었습니다.\n" + theater +"점 " +movie +" " +date +" " + time +" \n"
-			+"총 "+cost+"원입니다.";
+			+seat + " 총 "+cost+"원입니다.";
 		}
 		if(list2.size() == 1) {
 			if(list.get(0).equals("어른")) {
@@ -535,7 +585,7 @@ rb.add(""+headcount);
 				cost = headcount * child_price;
 				child = headToInt.get(list2.get(0));
 			}
-			response = ""+list.get(0) +" "+ list2.get(0) +" 확인되었습니다.\n"+ theater +"점 " +movie +" " +date +" " + time +" "+"\n총 "+cost+"원입니다.";
+			response = ""+list.get(0) +" "+ list2.get(0) +" 확인되었습니다.\n"+ theater +"점 " +movie +" " +date +" " + time +" "+"\n"+seat+" 총 "+cost+"원입니다.";
 			}
 
 		if(list2.size() == 2) {
@@ -553,7 +603,7 @@ rb.add(""+headcount);
 
 
 			response = ""+list.get(0) +" "+ list2.get(0) +" "+list.get(1) +" "+ list2.get(1) +" 확인되었습니다.\n"
-					+ theater +"점 " +movie +" " +date +" " + time +" "+"\n총 "+cost+"원입니다.";
+					+ theater +"점 " +movie +" " +date +" " + time +" "+"\n"+seat+" 총 "+cost+"원입니다.";
 		}
 
 		if(headcount!=adult+child) {
